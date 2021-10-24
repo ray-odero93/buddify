@@ -26,6 +26,12 @@ public class LoginActivity extends AppCompatActivity {
         actionBar.setTitle("Create Account");
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
+        email = findViewById(R.id.login_email);
+        password = findViewById(R.id.login_pass);
+        mLogin = findViewById(R.id.login_button);
+        needNewAccount = findViewById(R.id.new_account);
+        recoveryPass = findViewById(R.id.forget_pass);
+
 
     }
 }
