@@ -24,10 +24,14 @@ public class RegistrationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
         ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
         actionBar.setTitle("Create Account");
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
-
-
+        name = findViewById(R.id.register_name);
+        email = findViewById(R.id.register_email);
+        password = findViewById(R.id.register_pass);
+        mRegister = findViewById(R.id.register_button);
+        existingAccount = findViewById(R.id.homepage);
     }
 }
