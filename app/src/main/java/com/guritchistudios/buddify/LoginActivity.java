@@ -3,26 +3,21 @@ package com.guritchistudios.buddify;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+import android.text.InputType;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
@@ -33,7 +28,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView needNewAccount, recoveryPass;
     private ProgressDialog progressDialog;
     private FirebaseAuth mAuth;
-    FirebaseUser firebaseUser;
+    FirebaseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +47,9 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         progressDialog = new ProgressDialog(this);
 
+        if (mAuth != null) {
+            currentUser = mAuth.getCurrentUser();
+        }
 
         mLogin.setOnClickListener(view -> {
             String userEmail = email.getText().toString().trim();
@@ -66,6 +64,29 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void showRecoveryPassDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Recover Password");
+        LinearLayout linearLayout = new LinearLayout(this);
+        final EditText recoveryEmail = new EditText(this);
+        recoveryEmail.setText("@string/email_text");
+        recoveryEmail.setMinEms(16);
+        recoveryEmail.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        linearLayout.addView(recoveryEmail);
+        linearLayout.setPadding(10, 10, 10, 10);
+        builder.setView(linearLayout);
+
+        builder.setPositiveButton("Recover", (dialogInterface, i) -> {
+            String userEmail = email.getText().toString().trim();
+            startRecovery(userEmail);
+        });
+
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
+
+        builder.create().show();
+    }
+
+    private void startRecovery(String userEmail) {
+
     }
 
     private void loginUser(String userEmail, String userPass) {
