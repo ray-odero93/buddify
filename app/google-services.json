@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "469997252024",
+    "project_id": "buddify-ecc1e",
+    "storage_bucket": "buddify-ecc1e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469997252024:android:a4d7e55323e0304a5b734d",
+        "android_client_info": {
+          "package_name": "com.guritchistudios.buddify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "469997252024-94e6vl6pluv59n8i1tc8a8p8qutvrhtg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCw4ZNTF1Q5qpkRi0xJxvaXR8hOCZSh5eU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "469997252024-94e6vl6pluv59n8i1tc8a8p8qutvrhtg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
