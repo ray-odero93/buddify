@@ -20,6 +20,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -86,7 +87,22 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void startRecovery(String userEmail) {
+        progressDialog.setMessage("Sending e-mail...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
 
+        mAuth.sendPasswordResetEmail(userEmail).addOnCompleteListener(task -> {
+            progressDialog.dismiss();
+            if (task.isSuccessful()) {
+                Toast.makeText(LoginActivity.this, "E-mail sent.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(LoginActivity.this, "Sending failed.", Toast.LENGTH_LONG).show();
+            }
+        })
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(LoginActivity.this, "Error occurred.", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void loginUser(String userEmail, String userPass) {
@@ -96,7 +112,8 @@ public class LoginActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 progressDialog.dismiss();
                 FirebaseUser user = mAuth.getCurrentUser();
-                if (task.getResult().getAdditionalUserInfo().isNewUser()) {
+                if (Objects.requireNonNull(Objects.requireNonNull(task.getResult()).getAdditionalUserInfo()).isNewUser()) {
+                    assert user != null;
                     String userEmail1 = user.getEmail();
                     String userId = user.getUid();
                     HashMap<String, Object> hashMap = new HashMap<>();
