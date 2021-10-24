@@ -1,6 +1,7 @@
 package com.guritchistudios.buddify;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -39,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
         needNewAccount = findViewById(R.id.new_account);
         recoveryPass = findViewById(R.id.forget_pass);
         mAuth = FirebaseAuth.getInstance();
+        progressDialog = new ProgressDialog(this);
 
 
         mLogin.setOnClickListener(view -> {
@@ -47,8 +49,18 @@ public class LoginActivity extends AppCompatActivity {
 
             loginUser(userEmail, userPass);
         });
+
+        needNewAccount.setOnClickListener(view -> startActivity(new Intent(LoginActivity.this, RegistrationActivity.class)));
+
+        recoveryPass.setOnClickListener(view -> showRecoveryPassDialog());
+    }
+
+    private void showRecoveryPassDialog() {
     }
 
     private void loginUser(String userEmail, String userPass) {
+        progressDialog.setMessage("Logging in...");
+        progressDialog.show();
+
     }
 }
