@@ -1,6 +1,7 @@
 package com.guritchistudios.buddify;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -33,5 +34,11 @@ public class LoginActivity extends AppCompatActivity {
         recoveryPass = findViewById(R.id.forget_pass);
 
 
+        mLogin.setOnClickListener(view -> {
+            String userEmail = email.getText().toString().trim();
+            String userPass = password.getText().toString().trim();
+
+            loginUser(userEmail, userPass);
+        });
     }
 }
