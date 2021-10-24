@@ -1,5 +1,6 @@
 package com.guritchistudios.buddify;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -9,6 +10,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import org.w3c.dom.Text;
 
 public class LoginActivity extends AppCompatActivity {
@@ -16,7 +20,9 @@ public class LoginActivity extends AppCompatActivity {
     private EditText name, email, password;
     private Button mLogin;
     private TextView needNewAccount, recoveryPass;
-
+    private ProgressDialog progressDialog;
+    private FirebaseAuth mAuth;
+    FirebaseUser firebaseUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +38,7 @@ public class LoginActivity extends AppCompatActivity {
         mLogin = findViewById(R.id.login_button);
         needNewAccount = findViewById(R.id.new_account);
         recoveryPass = findViewById(R.id.forget_pass);
+        mAuth = FirebaseAuth.getInstance();
 
 
         mLogin.setOnClickListener(view -> {
@@ -40,5 +47,8 @@ public class LoginActivity extends AppCompatActivity {
 
             loginUser(userEmail, userPass);
         });
+    }
+
+    private void loginUser(String userEmail, String userPass) {
     }
 }
