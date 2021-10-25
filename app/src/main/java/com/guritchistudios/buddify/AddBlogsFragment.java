@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -22,6 +24,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,6 +34,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 
 
 public class AddBlogsFragment extends Fragment {
@@ -117,7 +128,73 @@ public class AddBlogsFragment extends Fragment {
         return view;
     }
 
-    private void showImagePicDialog() {
+    private void uploadData(final String titl, final String description) {
+        pd.setMessage("Publishing Post");
+        pd.show();
+        final String timestamp = String.valueOf(System.currentTimeMillis());
+        String filepathname = "Posts/" + "post" + timestamp;
+        Bitmap bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] data = byteArrayOutputStream.toByteArray();
+
+        // initialising the storage reference for updating the data
+        StorageReference storageReference1 = FirebaseStorage.getInstance().getReference().child(filepathname);
+        storageReference1.putBytes(data).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // getting the url of image uploaded
+                Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+                while (!uriTask.isSuccessful()) ;
+                String downloadUri = uriTask.getResult().toString();
+                if (uriTask.isSuccessful()) {
+                    // if task is successful the update the data into firebase
+                    HashMap<Object, String> hashMap = new HashMap<>();
+                    hashMap.put("uid", uid);
+                    hashMap.put("uname", name);
+                    hashMap.put("uemail", email);
+                    hashMap.put("udp", dp);
+                    hashMap.put("title", titl);
+                    hashMap.put("description", description);
+                    hashMap.put("uimage", downloadUri);
+                    hashMap.put("ptime", timestamp);
+                    hashMap.put("plike", "0");
+                    hashMap.put("pcomments", "0");
+
+                    // set the data into firebase and then empty the title ,description and image data
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Posts");
+                    databaseReference.child(timestamp).setValue(hashMap)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    pd.dismiss();
+                                    Toast.makeText(getContext(), "Published", Toast.LENGTH_LONG).show();
+                                    title.setText("");
+                                    des.setText("");
+                                    image.setImageURI(null);
+                                    imageuri = null;
+                                    startActivity(new Intent(getContext(), DashboardActivity.class));
+                                    getActivity().finish();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            pd.dismiss();
+                            Toast.makeText(getContext(), "Failed", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                pd.dismiss();
+                Toast.makeText(getContext(), "Failed", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void showImageDialogPic() {
         String options[] = {"Camera", "Gallery"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Pick Image From");
@@ -146,6 +223,46 @@ public class AddBlogsFragment extends Fragment {
         boolean result = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == (PackageManager.PERMISSION_GRANTED);
         return result;
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case CAMERA_REQUEST: {
+                if (grantResults.length > 0) {
+                    boolean camera_accepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean writeStorageaccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+
+                    if (camera_accepted && writeStorageaccepted) {
+                        pickFromCamera();
+                    } else {
+                        Toast.makeText(getContext(), "Please Enable Camera and Storage Permissions", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+            break;
+            case STORAGE_REQUEST: {
+                if (grantResults.length > 0) {
+                    boolean writeStorageaccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+
+                    if (writeStorageaccepted) {
+                        pickFromGallery();
+                    } else {
+                        Toast.makeText(getContext(), "Please Enable Storage Permissions", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    private void pickFromGallery() {
+
+    }
+
+    private void pickFromCamera() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+        galleryIntent.setType("image/*");
+        startActivityForResult(galleryIntent, IMAGEPICK_GALLERY_REQUEST);
     }
 
     private void requestStoragePermission() {
