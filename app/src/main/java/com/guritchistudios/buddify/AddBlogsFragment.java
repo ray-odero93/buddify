@@ -3,18 +3,12 @@ package com.guritchistudios.buddify;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +18,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -36,10 +33,10 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+import java.util.Objects;
 
 
 public class AddBlogsFragment extends Fragment {
@@ -50,8 +47,8 @@ public class AddBlogsFragment extends Fragment {
     EditText title, des;
     private static final int CAMERA_REQUEST = 100;
     private static final int STORAGE_REQUEST = 200;
-    String cameraPermission[];
-    String storagePermission[];
+    String[] cameraPermission;
+    String[] storagePermission;
     ProgressDialog pd;
     ImageView image;
     String edititle, editdes, editimage;
@@ -73,16 +70,16 @@ public class AddBlogsFragment extends Fragment {
         upload = view.findViewById(R.id.pupload);
         pd = new ProgressDialog(getContext());
         pd.setCanceledOnTouchOutside(false);
-        Intent intent = getActivity().getIntent();
+        Intent intent = requireActivity().getIntent();
         databaseReference = FirebaseDatabase.getInstance().getReference("Users");
         Query query = databaseReference.orderByChild("email").equalTo(email);
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    name = dataSnapshot1.child("name").getValue().toString();
+                    name = Objects.requireNonNull(dataSnapshot1.child("name").getValue()).toString();
                     email = "" + dataSnapshot1.child("email").getValue();
-                    dp = "" + dataSnapshot1.child("image").getValue().toString();
+                    dp = "" + Objects.requireNonNull(dataSnapshot1.child("image").getValue()).toString();
                 }
             }
 
@@ -95,34 +92,28 @@ public class AddBlogsFragment extends Fragment {
         cameraPermission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-        image.setOnClickListener(view1 -> {
-            showImageDialogPic();
-        });
+        image.setOnClickListener(view1 -> showImageDialogPic());
 
-        upload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String titl = "" + title.getText().toString().trim();
-                String description = "" + des.getText().toString().trim();
+        upload.setOnClickListener(v -> {
+            String titl = "" + title.getText().toString().trim();
+            String description = "" + des.getText().toString().trim();
 
-                if (TextUtils.isEmpty(titl)) {
-                    title.setError("Title Cant be empty");
-                    Toast.makeText(getContext(), "Title can't be left empty", Toast.LENGTH_LONG).show();
-                    return;
-                }
+            if (TextUtils.isEmpty(titl)) {
+                title.setError("Title Cant be empty");
+                Toast.makeText(getContext(), "Title can't be left empty", Toast.LENGTH_LONG).show();
+                return;
+            }
 
-                if (TextUtils.isEmpty(description)) {
-                    des.setError("Description Cant be empty");
-                    Toast.makeText(getContext(), "Description can't be left empty", Toast.LENGTH_LONG).show();
-                    return;
-                }
+            if (TextUtils.isEmpty(description)) {
+                des.setError("Description Cant be empty");
+                Toast.makeText(getContext(), "Description can't be left empty", Toast.LENGTH_LONG).show();
+                return;
+            }
 
-                if (imageuri == null) {
-                    Toast.makeText(getContext(), "Select an Image", Toast.LENGTH_LONG).show();
-                    return;
-                } else {
-                    uploadData(titl, description);
-                }
+            if (imageuri == null) {
+                Toast.makeText(getContext(), "Select an Image", Toast.LENGTH_LONG).show();
+            } else {
+                uploadData(titl, description);
             }
         });
         return view;
@@ -138,81 +129,63 @@ public class AddBlogsFragment extends Fragment {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
         byte[] data = byteArrayOutputStream.toByteArray();
 
-        // initialising the storage reference for updating the data
         StorageReference storageReference1 = FirebaseStorage.getInstance().getReference().child(filepathname);
-        storageReference1.putBytes(data).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // getting the url of image uploaded
-                Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                while (!uriTask.isSuccessful()) ;
-                String downloadUri = uriTask.getResult().toString();
-                if (uriTask.isSuccessful()) {
-                    // if task is successful the update the data into firebase
-                    HashMap<Object, String> hashMap = new HashMap<>();
-                    hashMap.put("uid", uid);
-                    hashMap.put("uname", name);
-                    hashMap.put("uemail", email);
-                    hashMap.put("udp", dp);
-                    hashMap.put("title", titl);
-                    hashMap.put("description", description);
-                    hashMap.put("uimage", downloadUri);
-                    hashMap.put("ptime", timestamp);
-                    hashMap.put("plike", "0");
-                    hashMap.put("pcomments", "0");
+        storageReference1.putBytes(data).addOnSuccessListener(taskSnapshot -> {
+            Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+            while (!uriTask.isSuccessful()) ;
+            String downloadUri = Objects.requireNonNull(uriTask.getResult()).toString();
 
-                    // set the data into firebase and then empty the title ,description and image data
-                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Posts");
-                    databaseReference.child(timestamp).setValue(hashMap)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    pd.dismiss();
-                                    Toast.makeText(getContext(), "Published", Toast.LENGTH_LONG).show();
-                                    title.setText("");
-                                    des.setText("");
-                                    image.setImageURI(null);
-                                    imageuri = null;
-                                    startActivity(new Intent(getContext(), DashboardActivity.class));
-                                    getActivity().finish();
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
+            if (uriTask.isSuccessful()) {
+                HashMap<Object, String> hashMap = new HashMap<>();
+                hashMap.put("uid", uid);
+                hashMap.put("uname", name);
+                hashMap.put("uemail", email);
+                hashMap.put("udp", dp);
+                hashMap.put("title", titl);
+                hashMap.put("description", description);
+                hashMap.put("uimage", downloadUri);
+                hashMap.put("ptime", timestamp);
+                hashMap.put("plike", "0");
+                hashMap.put("pcomments", "0");
+
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Posts");
+                databaseReference.child(timestamp).setValue(hashMap)
+                        .addOnSuccessListener(aVoid -> {
+                            pd.dismiss();
+                            Toast.makeText(getContext(), "Published", Toast.LENGTH_LONG).show();
+                            title.setText("");
+                            des.setText("");
+                            image.setImageURI(null);
+                            imageuri = null;
+                            startActivity(new Intent(getContext(), DashboardActivity.class));
+                            requireActivity().finish();
+                        }).addOnFailureListener(e -> {
                             pd.dismiss();
                             Toast.makeText(getContext(), "Failed", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
+                        });
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                pd.dismiss();
-                Toast.makeText(getContext(), "Failed", Toast.LENGTH_LONG).show();
-            }
+        }).addOnFailureListener(e -> {
+            pd.dismiss();
+            Toast.makeText(getContext(), "Failed", Toast.LENGTH_LONG).show();
         });
     }
 
     private void showImageDialogPic() {
-        String options[] = {"Camera", "Gallery"};
+        String[] options = {"Camera", "Gallery"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Pick Image From");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    if (!checkCameraPermission()) {
-                        requestCameraPermission();
-                    } else {
-                        pickFromCamera();
-                    }
-                } else if (which == 1) {
-                    if (!checkStoragePermission()) {
-                        requestStoragePermission();
-                    } else {
-                        pickFromGallery();
-                    }
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                if (!checkCameraPermission()) {
+                    requestCameraPermission();
+                } else {
+                    pickFromCamera();
+                }
+            } else if (which == 1) {
+                if (!checkStoragePermission()) {
+                    requestStoragePermission();
+                } else {
+                    pickFromGallery();
                 }
             }
         });
@@ -220,7 +193,7 @@ public class AddBlogsFragment extends Fragment {
     }
 
     private Boolean checkStoragePermission() {
-        boolean result = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        boolean result = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == (PackageManager.PERMISSION_GRANTED);
         return result;
     }
@@ -256,7 +229,9 @@ public class AddBlogsFragment extends Fragment {
     }
 
     private void pickFromGallery() {
-
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+        galleryIntent.setType("image/*");
+        startActivityForResult(galleryIntent, IMAGEPICK_GALLERY_REQUEST);
     }
 
     private void pickFromCamera() {
@@ -270,12 +245,26 @@ public class AddBlogsFragment extends Fragment {
     }
 
     private Boolean checkCameraPermission() {
-        boolean result = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
-        boolean result1 = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+        boolean result = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
+        boolean result1 = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
         return result && result1;
     }
 
     private void requestCameraPermission() {
         requestPermissions(cameraPermission, CAMERA_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == getActivity().RESULT_OK) {
+            if (requestCode == IMAGEPICK_GALLERY_REQUEST) {
+                imageuri = data.getData();
+                image.setImageURI(imageuri);
+            }
+            if (requestCode == IMAGE_PICKCAMERA_REQUEST) {
+                image.setImageURI(imageuri);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
