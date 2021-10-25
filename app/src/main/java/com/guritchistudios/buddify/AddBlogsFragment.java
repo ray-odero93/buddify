@@ -1,5 +1,6 @@
 package com.guritchistudios.buddify;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -73,4 +74,8 @@ public class AddBlogsFragment extends Fragment {
 
             }
         });
+
+        cameraPermission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    }
 }
