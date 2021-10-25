@@ -147,4 +147,18 @@ public class AddBlogsFragment extends Fragment {
                 == (PackageManager.PERMISSION_GRANTED);
         return result;
     }
+
+    private void requestStoragePermission() {
+        requestPermissions(storagePermission, STORAGE_REQUEST);
+    }
+
+    private Boolean checkCameraPermission() {
+        boolean result = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
+        boolean result1 = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+        return result && result1;
+    }
+
+    private void requestCameraPermission() {
+        requestPermissions(cameraPermission, CAMERA_REQUEST);
+    }
 }
