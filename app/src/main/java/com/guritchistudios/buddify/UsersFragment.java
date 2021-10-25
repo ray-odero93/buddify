@@ -55,8 +55,12 @@ public class UsersFragment extends Fragment {
                 usersList.clear();
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     UsersModel modelUsers = dataSnapshot1.getValue(UsersModel.class);
-                    if (modelUsers.getUid() != null && !modelUsers.getUid().equals(firebaseUser.getUid())) {
-                        usersList.add(modelUsers);
+                    assert modelUsers != null;
+                    if (modelUsers.getUid() != null) {
+                        assert firebaseUser != null;
+                        if (!modelUsers.getUid().equals(firebaseUser.getUid())) {
+                            usersList.add(modelUsers);
+                        }
                     }
                     adapterUsers = new UsersAdapters(getActivity(), usersList);
                     recyclerView.setAdapter(adapterUsers);
