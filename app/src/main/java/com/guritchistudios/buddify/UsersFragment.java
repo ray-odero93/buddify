@@ -1,5 +1,6 @@
 package com.guritchistudios.buddify;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -65,6 +66,38 @@ public class UsersFragment extends Fragment {
                     adapterUsers = new UsersAdapters(getActivity(), usersList);
                     recyclerView.setAdapter(adapterUsers);
                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void searchUsers(final String s) {
+        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+        reference.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                usersList.clear();
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    UsersModel modelUsers = dataSnapshot1.getValue(UsersModel.class);
+                    assert firebaseUser != null;
+                    assert modelUsers != null;
+                    if (!modelUsers.getUid().equals(firebaseUser.getUid())) {
+                        if (modelUsers.getName().toLowerCase().contains(s.toLowerCase()) ||
+                                modelUsers.getEmail().toLowerCase().contains(s.toLowerCase())) {
+                            usersList.add(modelUsers);
+                        }
+                    }
+                    adapterUsers = new UsersAdapters(getActivity(), usersList);
+                    adapterUsers.notifyDataSetChanged();
+                    recyclerView.setAdapter(adapterUsers);
+                }
+
             }
 
             @Override
