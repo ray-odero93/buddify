@@ -77,5 +77,9 @@ public class AddBlogsFragment extends Fragment {
 
         cameraPermission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+        image.setOnClickListener(view1 -> {
+            showImageDialogPic();
+        });
     }
 }
