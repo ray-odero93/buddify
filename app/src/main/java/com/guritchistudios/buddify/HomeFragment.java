@@ -5,14 +5,19 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,16 +35,14 @@ public class HomeFragment extends Fragment {
     FirebaseAuth firebaseAuth;
     String myuid;
     RecyclerView recyclerView;
-    List<ModelPost> posts;
-    AdapterPosts adapterPosts;
+    List<PostsModel> posts;
+    PostsAdapters adapterPosts;
 
     public HomeFragment() {
-        // Required empty public constructor
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         firebaseAuth = FirebaseAuth.getInstance();
         recyclerView = view.findViewById(R.id.postrecyclerview);
@@ -60,9 +63,9 @@ public class HomeFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 posts.clear();
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    ModelPost modelPost = dataSnapshot1.getValue(ModelPost.class);
+                    PostsModel modelPost = dataSnapshot1.getValue(PostsModel.class);
                     posts.add(modelPost);
-                    adapterPosts = new AdapterPosts(getActivity(), posts);
+                    adapterPosts = new PostsAdapters(getActivity(), posts);
                     recyclerView.setAdapter(adapterPosts);
                 }
             }
@@ -74,7 +77,6 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    // Search post code
     private void searchPosts(final String search) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Posts");
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -82,12 +84,12 @@ public class HomeFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 posts.clear();
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    ModelPost modelPost = dataSnapshot1.getValue(ModelPost.class);
+                    PostsModel modelPost = dataSnapshot1.getValue(PostsModel.class);
                     if (modelPost.getTitle().toLowerCase().contains(search.toLowerCase()) ||
                             modelPost.getDescription().toLowerCase().contains(search.toLowerCase())) {
                         posts.add(modelPost);
                     }
-                    adapterPosts = new AdapterPosts(getActivity(), posts);
+                    adapterPosts = new PostsAdapters(getActivity(), posts);
                     recyclerView.setAdapter(adapterPosts);
 
                 }
