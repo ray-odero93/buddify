@@ -4,13 +4,17 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.text.format.DateFormat;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -137,6 +141,23 @@ public class PostsAdapters extends RecyclerView.Adapter<PostsAdapters.MyHolder>{
                 context.startActivity(intent);
             }
         });
+    }
+
+    private void showMoreOptions(ImageButton more, String uid, String myuid, final String pid, final String image) {
+        PopupMenu popupMenu = new PopupMenu(context, more, Gravity.END);
+        if (uid.equals(myuid)) {
+            popupMenu.getMenu().add(Menu.NONE, 0, 0, "DELETE");
+        }
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == 0) {
+                    deltewithImage(pid, image);
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
     }
 
     @Override
