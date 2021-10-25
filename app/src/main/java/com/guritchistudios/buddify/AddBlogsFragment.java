@@ -9,12 +9,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -81,5 +83,33 @@ public class AddBlogsFragment extends Fragment {
         image.setOnClickListener(view1 -> {
             showImageDialogPic();
         });
+
+        upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String titl = "" + title.getText().toString().trim();
+                String description = "" + des.getText().toString().trim();
+
+                if (TextUtils.isEmpty(titl)) {
+                    title.setError("Title Cant be empty");
+                    Toast.makeText(getContext(), "Title can't be left empty", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (TextUtils.isEmpty(description)) {
+                    des.setError("Description Cant be empty");
+                    Toast.makeText(getContext(), "Description can't be left empty", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (imageuri == null) {
+                    Toast.makeText(getContext(), "Select an Image", Toast.LENGTH_LONG).show();
+                    return;
+                } else {
+                    uploadData(titl, description);
+                }
+            }
+        });
+        return view;
     }
 }
