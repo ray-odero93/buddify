@@ -226,4 +226,25 @@ public class PostsAdapters extends RecyclerView.Adapter<PostsAdapters.MyHolder>{
             profile = itemView.findViewById(R.id.profilelayout);
         }
     }
+
+    private void setLikes(final MyHolder holder, final String pid) {
+        liekeref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child(pid).hasChild(myuid)) {
+                    holder.likebtn.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_liked, 0, 0, 0);
+                    holder.likebtn.setText("Liked");
+                } else {
+                    holder.likebtn.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_like, 0, 0, 0);
+                    holder.likebtn.setText("Like");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 }
