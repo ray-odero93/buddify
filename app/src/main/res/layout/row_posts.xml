@@ -79,7 +79,8 @@
             android:id="@+id/pimagetv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorWhite" />
+            android:background="@color/colorWhite"
+            android:contentDescription="prof_pic" />
 
         <LinearLayout
             android:layout_width="match_parent"
