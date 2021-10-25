@@ -1,7 +1,9 @@
 package com.guritchistudios.buddify;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -111,5 +113,30 @@ public class AddBlogsFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    private void showImagePicDialog() {
+        String options[] = {"Camera", "Gallery"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Pick Image From");
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    if (!checkCameraPermission()) {
+                        requestCameraPermission();
+                    } else {
+                        pickFromCamera();
+                    }
+                } else if (which == 1) {
+                    if (!checkStoragePermission()) {
+                        requestStoragePermission();
+                    } else {
+                        pickFromGallery();
+                    }
+                }
+            }
+        });
+        builder.create().show();
     }
 }
