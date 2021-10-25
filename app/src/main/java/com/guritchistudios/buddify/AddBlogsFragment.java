@@ -1,6 +1,7 @@
 package com.guritchistudios.buddify;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -256,8 +257,10 @@ public class AddBlogsFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode == getActivity().RESULT_OK) {
+        getActivity();
+        if (resultCode == Activity.RESULT_OK) {
             if (requestCode == IMAGEPICK_GALLERY_REQUEST) {
+                assert data != null;
                 imageuri = data.getData();
                 image.setImageURI(imageuri);
             }
